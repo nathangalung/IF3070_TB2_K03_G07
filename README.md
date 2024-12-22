@@ -24,12 +24,8 @@ tqdm
 3. Jalankan semua sel secara berurutan (Kernel -> Run All)
 
 ## Pembagian Tugas:
-1. 182221300 - Bryan P. Hutagalung
-Tugas: KNN scratch, sklearn, dan mengerjakan laporan
-2. 18222134 - Ardra Rafif Sahasika
-Tugas: GNB scratch, sklearn, dan mengerjakan laporan
-3. 18222137 - Timothy Haposan Simanjuntak
-Tugas: KNN scratch, sklearn, dan mengerjakan laporan
-4. 18222141 - Yusril Fazri Mahendra
-Tugas: GNB scratch, sklearn, dan mengerjakan laporan
+1. 182221300 - Bryan P. Hutagalung (KNN scratch, sklearn, dan mengerjakan laporan)
+2. 18222134 - Ardra Rafif Sahasika (GNB scratch, sklearn, dan mengerjakan laporan)
+3. 18222137 - Timothy Haposan Simanjuntak (KNN scratch, sklearn, dan mengerjakan laporan)
+4. 18222141 - Yusril Fazri Mahendra (GNB scratch, sklearn, dan mengerjakan laporan)
 
