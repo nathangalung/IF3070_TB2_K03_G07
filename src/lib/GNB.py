@@ -1,27 +1,48 @@
 import numpy as np
 from collections import defaultdict
 import pickle
-import concurrent.futures
-from tqdm import tqdm
+from tqdm.auto import tqdm
+from sklearn.base import BaseEstimator, ClassifierMixin
 
-class gnb:
-    """
-    Gaussian Naive Bayes classifier implementation from scratch
-    Optimized for large datasets using vectorization and parallel processing
-    """
-    def __init__(self, n_jobs=-1, batch_size=1000):
-        # Initialize model parameters
-        self.class_priors = None
-        self.means = None
-        self.variances = None
-        self.classes = None
-        self.n_features = None
-        self.n_jobs = n_jobs
+class gnb(BaseEstimator, ClassifierMixin):
+    """Gaussian Naive Bayes with sklearn compatibility"""
+    def __init__(self, batch_size=1000, verbose=True):
+        # Initialize parameters
         self.batch_size = batch_size
+        self.verbose = verbose
         
-        # Pre-computed constants for Gaussian density
+        # Protected attributes
+        self._estimator_type = "classifier"
         self._const = None
         self._log_const = None
+        
+        # Model state
+        self.classes_ = None  # Changed from classes to classes_
+        self.class_priors_ = None  # Changed from class_priors
+        self.means_ = None  # Changed from means
+        self.variances_ = None  # Changed from variances
+        self.n_features_ = None  # Changed from n_features
+    
+    def get_params(self, deep=True):
+        """Get parameters (required for sklearn compatibility)"""
+        return {
+            'batch_size': self.batch_size,
+            'verbose': self.verbose
+        }
+    
+    def set_params(self, **parameters):
+        """Set parameters (required for sklearn compatibility)"""
+        for parameter, value in parameters.items():
+            setattr(self, parameter, value)
+        return self
+
+    def _clone(self):
+        """Clone estimator (required for sklearn compatibility)"""
+        return gnb(**self.get_params())
+
+    def __sklearn_clone__(self):
+        """Clone interface for sklearn"""
+        return self._clone()
 
     def fit(self, X, y):
         """
@@ -101,6 +122,30 @@ class gnb:
             predictions[start_idx:end_idx] = self.classes[np.argmax(log_likelihood, axis=1)]
         
         return predictions
+    
+    def predict_proba(self, X):
+        """Predict probability estimates"""
+        X = X.values if hasattr(X, 'values') else np.array(X)
+        
+        n_samples = X.shape[0]
+        probas = np.zeros((n_samples, len(self.classes_)))
+        
+        with tqdm(total=n_samples, disable=not self.verbose) as pbar:
+            for i in range(0, n_samples, self.batch_size):
+                end_idx = min(i + self.batch_size, n_samples)
+                X_batch = X[i:end_idx]
+                
+                log_likelihood = self._compute_log_likelihood_batch(X_batch)
+                probas[i:end_idx] = np.exp(log_likelihood - np.max(log_likelihood, axis=1, keepdims=True))
+                probas[i:end_idx] /= np.sum(probas[i:end_idx], axis=1, keepdims=True)
+                
+                pbar.update(end_idx - i)
+                
+        return probas
+
+    def score(self, X, y):
+        """Return accuracy score"""
+        return np.mean(self.predict(X) == y)
 
     def save(self, path):
         """Save model to disk"""
